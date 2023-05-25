@@ -9,6 +9,14 @@ const imagesSchema = new mongoose.Schema({
     type: "String",
     required: true,
   },
+  type: {
+    type: Boolean,
+    required: true,
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users ",
+  },
 });
 
 const ImgGallery = mongoose.model("ImagesGallery ", imagesSchema);

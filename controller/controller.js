@@ -1,31 +1,72 @@
 const ImgGallery = require("../schema/gallery");
 const User = require("../schema/user");
 
+// const createGalleryImage = async (req, res) => {
+//   const { imgTitle, imgUrl } = req.body;
+//   if (!imgTitle || !imgUrl) {
+//     return res.status(422).json({ error: "Please Filled all fields" });
+//   }
+
+//   try {
+//     const imageExist = await ImgGallery.findOne({ imgTitle: imgTitle });
+//     if (imageExist) {
+//       return res.status(422).json({ error: "Image Already Exists!" });
+//     } else {
+//       const new_img = new ImgGallery({
+//         imgTitle,
+//         imgUrl,
+//       });
+
+//       const imgAdded = await new_img.save();
+//       console.log(imgAdded);
+
+//       if (imgAdded) {
+//         res
+//           .status(201)
+//           .json({ message: "Image Successfully Added to Gallery!" });
+//       } else {
+//         res.status(500).json({ error: "Image addition Failed!" });
+//       }
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
 const createGalleryImage = async (req, res) => {
-  const { imgTitle, imgUrl } = req.body;
-  if (!imgTitle || !imgUrl) {
-    return res.status(422).json({ error: "Please Filled all fields" });
+  const { imgTitle, imgUrl, type } = req.body;
+  if (!imgTitle || !imgUrl || !type) {
+    return res.status(422).json({ error: "Please fill in all fields" });
   }
 
   try {
     const imageExist = await ImgGallery.findOne({ imgTitle: imgTitle });
     if (imageExist) {
-      return res.status(422).json({ error: "Image Already Exists!" });
+      return res.status(422).json({ error: "Image already exists!" });
     } else {
       const new_img = new ImgGallery({
         imgTitle,
         imgUrl,
+        type,
+        user: req.body.userId, // Add the userId from the request body
       });
 
       const imgAdded = await new_img.save();
       console.log(imgAdded);
 
       if (imgAdded) {
+        // Update the user's images array
+        await User.findByIdAndUpdate(
+          req.body.userId,
+          { $push: { images: imgAdded._id } },
+          { new: true }
+        );
+
         res
           .status(201)
-          .json({ message: "Image Successfully Added to Gallery!" });
+          .json({ message: "Image successfully added to gallery!" });
       } else {
-        res.status(500).json({ error: "Image addition Failed!" });
+        res.status(500).json({ error: "Image addition failed!" });
       }
     }
   } catch (error) {
@@ -35,7 +76,13 @@ const createGalleryImage = async (req, res) => {
 
 const getGallery = async (req, res) => {
   try {
-    const gallery = await ImgGallery.find();
+    const type = req.query.type;
+    let gallery;
+    if (type === undefined) {
+      gallery = await ImgGallery.find().populate("user").exec();
+    } else {
+      gallery = await ImgGallery.find({ type: type });
+    }
     if (gallery) {
       res.send(gallery);
     } else {

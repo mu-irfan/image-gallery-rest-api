@@ -8,6 +8,7 @@ const {
   createUser,
   getUser,
   getUsers,
+  // test,
 } = require("../controller/controller");
 
 Router.post("/add-image", createGalleryImage);
@@ -16,5 +17,6 @@ Router.get("/single-image/:id", getSingleImage);
 Router.post("/create-user", createUser);
 Router.get("/users", getUsers);
 Router.get("/user/:id", getUser);
+// Router.get("/test/:id/images", test);
 
 module.exports = Router;
